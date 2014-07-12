@@ -18,7 +18,8 @@ class Player
 		return "No such file found" if not File.exists?(@save_name)
 		@load_file = File.open(@save_name, "r")
 		loaded_string = @load_file.read.split("\n")
-		@game.load_init(decrypt_word(loaded_string[0].split("")), loaded_string[1].split(""), loaded_string[2].split(""))
+		decrypt_word(loaded_string[0].split(""))
+		@game.load_init(@decrypted_word, loaded_string[1].split(""), loaded_string[2].split(""))
 	end
 	private
 	def encrypt_word
@@ -38,6 +39,20 @@ class Player
 			position = (@alphabet.index(word[pointer]) - 21) % 26
 			@decrypted_word << @alphabet[position]
 			pointer += 1
+		end
+	end
+	public
+	def exists?
+		if File.exists?(@save_name)
+			puts "Do you want to load game? ('Y' for yes or 'N' for no)"
+			stat = true
+			while stat
+				answer = gets.chomp.upcase
+				if answer == 'Y' or answer == 'N'
+					stat = false
+				end
+			end
+			load if answer == 'Y'
 		end
 	end
 end
@@ -109,14 +124,15 @@ begin
 	puts "Enter your name: "
 	name = gets.chomp.downcase
 	player = Player.new(name, game)
-=begin
+	#loading mechanism
+	player.exists?
 	#starts player guessing
 	puts "Guess now! Input any letter or input 'SG' to save game"
 	game_status = 0
 	tries = 0
 
 	while game_status == 0
-		puts "#{game.word}"
+		system "clear"
 		puts "#{game.mask}"
 		puts "Number of tries: #{tries}"
 		puts "Your guesses: #{game.guess_list}" 
@@ -136,13 +152,13 @@ begin
 		tries += 1 unless game.is_in_word?(guess_letter)
 		game_status = game.is_game_running?(guess_letter, tries)
 	end
+	#game end message
+	system ("clear")
 	if game_status == 1
 		puts "Congratulations! You won the game!"
 	else
 		puts "Number of tries exceeded. The word is #{game.word.join("")}"
 	end
-=end
-	player.load
 rescue ArgumentError
 	puts "Error 404: 5desk.txt is missing! Game cannot initialize."
 end
